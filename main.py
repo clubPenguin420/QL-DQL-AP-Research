@@ -3,6 +3,7 @@ import pygame
 from MazeGame.MazePlayer import MazePlayer
 from MazeGame.MazeLavaPit import MazeLavaPit
 from RunnerChaser.Runner import Runner
+from RunnerChaser.Chaser import Chaser
 
 import numpy as np
 import sys
@@ -27,11 +28,15 @@ def main():
     global state
 
     m_player = MazePlayer(7.5, 7.5)
-    rc_player = Runner(1007.5, 500)
+    rc_player = Runner(1007.5, 457.5)
+    rc_enemy_1 = Chaser(857.5, 532.5)
+    rc_enemy_2 = Chaser(1007.5, 532.5)
+    rc_enemy_3 = Chaser(1157.5, 532.5)
     pit_1 = MazeLavaPit(405, 30, 15*5, 15*18)
     pit_2 = MazeLavaPit(45, 405, 15*15, 15*5)
     pit_3 = MazeLavaPit(390, 420, 15*5, 15*5)
-    goal = pygame.Rect(540, 540, 60, 60)
+    m_goal = pygame.Rect(540, 540, 60, 60)
+    rc_goal = pygame.Rect(970, 0, 60, 60)
 
 
     pygame.init()
@@ -92,8 +97,12 @@ def main():
         pit_1.draw(DisplaySurface)
         pit_2.draw(DisplaySurface)
         pit_3.draw(DisplaySurface)
+        rc_enemy_1.draw(DisplaySurface)
+        rc_enemy_2.draw(DisplaySurface)
+        rc_enemy_3.draw(DisplaySurface)
 
-        pygame.draw.rect(DisplaySurface, (0, 0, 230), goal)
+        pygame.draw.rect(DisplaySurface, (0, 0, 230), m_goal)
+        pygame.draw.rect(DisplaySurface, (0, 0, 230), rc_goal)
 
         if((m_player.rect.colliderect(pit_1.rect) or m_player.rect.colliderect(pit_2.rect) or m_player.rect.colliderect(pit_3.rect)) and pit_1.active):
             running = False

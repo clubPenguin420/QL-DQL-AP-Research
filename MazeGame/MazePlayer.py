@@ -4,7 +4,7 @@ from pygame.locals import *
 class MazePlayer(pygame.sprite.Sprite):
     def __init__(self, center_x, center_y):
         super().__init__()
-        self.image = pygame.image.load("MazeGame\\Player.jpg")
+        self.image = pygame.image.load("Assets\\Player.jpg")
         self.rect = self.image.get_rect()
         self.rect.center = (center_x, center_y)
 
