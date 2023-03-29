@@ -7,6 +7,7 @@ class Chaser(pygame.sprite.Sprite):
         self.image = pygame.image.load("Assets\\Chaser.jpg")
         self.rect = self.image.get_rect()
         self.rect.center = (center_x, center_y)
+        self.active = True
 
     def update(self, action):
         pressed_keys = pygame.key.get_pressed()

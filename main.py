@@ -37,7 +37,8 @@ def main():
     pit_3 = MazeLavaPit(390, 420, 15*5, 15*5)
     m_goal = pygame.Rect(540, 540, 60, 60)
     rc_goal = pygame.Rect(970, 0, 60, 60)
-
+    m_help = pygame.Rect(285, 555, 60, 45)
+    rc_help = pygame.Rect(1135, 0, 60, 45)
 
     pygame.init()
     pygame.display.set_caption("An exciting game of pong")
@@ -64,6 +65,7 @@ def main():
     #     return "".join(map(str, (paddle1_y, paddle2_y, ball_x, ball_y, ball_v)))
     
     running = True
+    m_start = pygame.time.get_ticks()
     while running: 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -89,6 +91,11 @@ def main():
 
         pygame.draw.line(DisplaySurface, (100, 100, 100), (600, 0), (600, 600))
         pygame.draw.line(DisplaySurface, (100, 100, 100), (700, 0), (700, 600))
+        for i in range(0, 600, 15):
+            pygame.draw.line(DisplaySurface, (100, 100, 100), (i, 0), (i, 600))
+            pygame.draw.line(DisplaySurface, (100, 100, 100), (0, i), (600, i))
+            pygame.draw.line(DisplaySurface, (100, 100, 100), (i+700, 0), (i+700, 600))
+            pygame.draw.line(DisplaySurface, (100, 100, 100), (700, i), (1300, i))
         
         m_player.update(0)
         rc_player.update(0)
@@ -103,9 +110,23 @@ def main():
 
         pygame.draw.rect(DisplaySurface, (0, 0, 230), m_goal)
         pygame.draw.rect(DisplaySurface, (0, 0, 230), rc_goal)
+        pygame.draw.rect(DisplaySurface, (33, 115, 55), m_help)
+        pygame.draw.rect(DisplaySurface, (33, 115, 55), rc_help)
 
-        if((m_player.rect.colliderect(pit_1.rect) or m_player.rect.colliderect(pit_2.rect) or m_player.rect.colliderect(pit_3.rect)) and pit_1.active):
+        if (m_player.rect.colliderect(pit_1.rect) or m_player.rect.colliderect(pit_2.rect) or m_player.rect.colliderect(pit_3.rect)) and pit_1.active :
             running = False
+        elif m_player.rect.colliderect(m_help):
+            print("Maze Help Portal activated!")
+        elif rc_player.rect.colliderect(rc_help):
+            print("Runner-Chaser Help Portal activated!")
+            if pygame.time.get_ticks() - m_start > 5000:
+                pit_1.active = pit_2.active = pit_3.active = False
+                m_start = pygame.time.get_ticks()
+
+        
+        if not pit_1.active and pygame.time.get_ticks() - m_start > 5000:
+            pit_1.active = pit_2.active = pit_3.active = True
+            start = pygame.time.get_ticks()        
         pygame.display.update()
         array = pygame.surfarray.array2d(DisplaySurface)
         # state2 = pack_state()
