@@ -29,9 +29,9 @@ def main():
 
     m_player = MazePlayer(7.5, 7.5)
     rc_player = Runner(1007.5, 457.5)
-    rc_enemy_1 = Chaser(857.5, 532.5)
+    rc_enemy_1 = Chaser(857.5, 457.5)
     rc_enemy_2 = Chaser(1007.5, 532.5)
-    rc_enemy_3 = Chaser(1157.5, 532.5)
+    rc_enemy_3 = Chaser(1157.5, 397.5)
     pit_1 = MazeLavaPit(405, 30, 15*5, 15*18)
     pit_2 = MazeLavaPit(45, 405, 15*15, 15*5)
     pit_3 = MazeLavaPit(390, 420, 15*5, 15*5)
@@ -65,6 +65,7 @@ def main():
     #     return "".join(map(str, (paddle1_y, paddle2_y, ball_x, ball_y, ball_v)))
     
     running = True
+    rc_start = pygame.time.get_ticks()
     m_start = pygame.time.get_ticks()
     while running: 
         for event in pygame.event.get():
@@ -99,8 +100,11 @@ def main():
         
         m_player.update(0)
         rc_player.update(0)
-        m_player.draw(DisplaySurface)
-        rc_player.draw(DisplaySurface)
+
+        rc_status1 = rc_enemy_1.update(rc_player)
+        rc_status2 = rc_enemy_2.update(rc_player)
+        rc_status3 = rc_enemy_3.update(rc_player)
+
         pit_1.draw(DisplaySurface)
         pit_2.draw(DisplaySurface)
         pit_3.draw(DisplaySurface)
@@ -113,20 +117,32 @@ def main():
         pygame.draw.rect(DisplaySurface, (33, 115, 55), m_help)
         pygame.draw.rect(DisplaySurface, (33, 115, 55), rc_help)
 
+        m_player.draw(DisplaySurface)
+        rc_player.draw(DisplaySurface)
+
         if (m_player.rect.colliderect(pit_1.rect) or m_player.rect.colliderect(pit_2.rect) or m_player.rect.colliderect(pit_3.rect)) and pit_1.active :
+            running = False
+        if rc_status1 == -1 or rc_status2 == -1 or rc_status3 == -1:
             running = False
         elif m_player.rect.colliderect(m_help):
             print("Maze Help Portal activated!")
+            if pygame.time.get_ticks() - m_start > 5000:
+                rc_enemy_1.active = rc_enemy_2.active = rc_enemy_3.active = False
+                m_start = pygame.time.get_ticks()
         elif rc_player.rect.colliderect(rc_help):
             print("Runner-Chaser Help Portal activated!")
-            if pygame.time.get_ticks() - m_start > 5000:
+            if pygame.time.get_ticks() - rc_start > 5000:
                 pit_1.active = pit_2.active = pit_3.active = False
-                m_start = pygame.time.get_ticks()
+                rc_start = pygame.time.get_ticks()
 
         
-        if not pit_1.active and pygame.time.get_ticks() - m_start > 5000:
+        if not pit_1.active and pygame.time.get_ticks() - rc_start > 5000:
             pit_1.active = pit_2.active = pit_3.active = True
-            start = pygame.time.get_ticks()        
+            rc_start = pygame.time.get_ticks()
+        
+        if not rc_enemy_1.active and pygame.time.get_ticks() - m_start > 5000:
+            rc_enemy_1.active = rc_enemy_2.active = rc_enemy_3.active = True
+            m_start = pygame.time.get_ticks()        
         pygame.display.update()
         array = pygame.surfarray.array2d(DisplaySurface)
         # state2 = pack_state()
