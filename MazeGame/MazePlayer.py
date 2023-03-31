@@ -12,16 +12,16 @@ class MazePlayer(pygame.sprite.Sprite):
         pressed_keys = pygame.key.get_pressed()
 
 
-        if pressed_keys[K_s]:
+        if action == 1:
             if self.rect.bottom < 600:
                 self.rect.move_ip(0, 15)
-        elif pressed_keys[K_w]:
+        elif action == 2:
             if self.rect.top > 0:
                 self.rect.move_ip(0, -15)
-        elif pressed_keys[K_d]:
+        elif action == 3:
             if self.rect.right < 600:
                 self.rect.move_ip(15, 0)
-        elif pressed_keys[K_a]:
+        elif action == 4:
             if self.rect.left > 0:
                 self.rect.move_ip(-15, 0)
     

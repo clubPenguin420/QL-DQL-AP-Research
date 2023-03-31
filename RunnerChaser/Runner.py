@@ -12,16 +12,16 @@ class Runner(pygame.sprite.Sprite):
         pressed_keys = pygame.key.get_pressed()
 
 
-        if pressed_keys[K_DOWN]:
+        if action == 1:
             if self.rect.bottom < 600:
                 self.rect.move_ip(0, 15)
-        elif pressed_keys[K_UP]:
+        elif action == 2:
             if self.rect.top > 0:
                 self.rect.move_ip(0, -15)
-        elif pressed_keys[K_RIGHT]:
+        elif action == 3:
             if self.rect.right < 1300:
                 self.rect.move_ip(15, 0)
-        elif pressed_keys[K_LEFT]:
+        elif action == 4:
             if self.rect.left > 700:
                 self.rect.move_ip(-15, 0)
     

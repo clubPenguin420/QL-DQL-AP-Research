@@ -10,15 +10,17 @@ class Chaser(pygame.sprite.Sprite):
         self.rect.center = (center_x, center_y)
         self.active = True
 
-    def update(self, runner):
+    def update_c(self, runner, chaser1, chaser2):
         if self.active:
             dx = runner.rect.centerx - self.rect.centerx
             dy = runner.rect.centery - self.rect.centery
 
             if dx != 0:
-                self.rect.centerx += dx / abs(dx)
+                if not chaser1.rect.centerx == self.rect.centerx + (15 * dx / abs(dx)) or not chaser2.rect.centerx == self.rect.centerx + (15 * dx / abs(dx)):
+                    self.rect.centerx += 15 * (dx / abs(dx))
             if dy != 0:
-                self.rect.centery += dy / abs(dy)
+                if not chaser1.rect.centery == self.rect.centery + (15 * dy / abs(dy)) or not chaser2.rect.centery == self.rect.centery + (15 * dy / abs(dy)):
+                    self.rect.centery += 15 * (dy / abs(dy))
             if dx == 0 and dy == 0:
                 return -1
         
@@ -40,6 +42,20 @@ class Chaser(pygame.sprite.Sprite):
         # elif pressed_keys[K_LEFT]:
         #     if self.rect.left > 700:
         #         self.rect.move_ip(-15, 0)
+    
+    def update(self, runner):
+        if self.active:
+           dx = runner.rect.centerx - self.rect.centerx
+           dy = runner.rect.centery - self.rect.centery
+
+           if dx != 0:
+               self.rect.centerx += 15 * (dx / abs(dx))
+           if dy != 0:
+               self.rect.centery += 15 * (dy / abs(dy))
+           if dx == 0 and dy == 0:
+               return -1
+
+           return 0
     
     def draw(self, surface):
         surface.blit(self.image, self.rect)
