@@ -24,6 +24,13 @@ e_decay = 0.75**(1/num_episodes)
 Q_m = {}
 Q_rc = {}
 
+
+with open("Maze_Q_Table.json") as file:
+    Q_m = json.load(file)
+file.close()
+with open("Tag_Q_Table.json") as file:
+    Q_rc = json.load(file)
+
 def main(i):
 
     global epsilon
