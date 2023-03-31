@@ -27,6 +27,8 @@ Q_rc = {}
 def main(i):
 
     global epsilon
+    global m_epsilon
+    global rc_epsilon
 
     m_player = MazePlayer(7.5, 7.5)
     rc_player = Runner(1007.5, 457.5)
@@ -165,8 +167,12 @@ def main(i):
         
         if m_player.rect.colliderect(m_goal):
             m_run = False
+            m_reward += 10
+            rc_reward += 1
         if rc_player.rect.colliderect(rc_goal):
             r_run = False
+            rc_reward += 10
+            m_reward += 1
 
         
         if not pit_1.active and pygame.time.get_ticks() - rc_start > 5000:
@@ -193,7 +199,7 @@ def main(i):
             Q_rc[rc_state][rc_action] = (1-learning_rate) * Q_rc[rc_state][rc_action] + learning_rate * (rc_reward + discount * np.max(Q_rc[rc_state2]))
         
         running = m_run or rc_run
-        #pygame.time.wait(500)
+        #pygame.time.wait(50)
 
 
 if __name__ == "__main__":
@@ -203,6 +209,12 @@ if __name__ == "__main__":
         main(i)
         epsilon *= e_decay
         print(epsilon)
+        with open("Maze_Q_Table.json", "w") as file:
+          json.dump(Q_m, file)
+        file.close()
+        with open("Tag_Q_Table.json", "w") as file:
+          json.dump(Q_rc, file)
+        file.close()
     # # for keys,values in Q.items():
     # #     print(keys)
     # #     print(values)

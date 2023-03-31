@@ -5,7 +5,7 @@ import math
 class Chaser(pygame.sprite.Sprite):
     def __init__(self, center_x, center_y):
         super().__init__()
-        self.image = pygame.image.load("Assets\\Chaser.jpg")
+        self.image = pygame.image.load("Assets/Chaser.jpg")
         self.rect = self.image.get_rect()
         self.rect.center = (center_x, center_y)
         self.active = True
