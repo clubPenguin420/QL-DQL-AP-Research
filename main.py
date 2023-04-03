@@ -12,13 +12,28 @@ import math
 import json
 
 np.set_printoptions(threshold=sys.maxsize)
-num_episodes = 1000
-discount = 0.8
-learning_rate = 0.9
-epsilon = 0.99
-m_epsilon = 1
-rc_epsilon = 1
-e_decay = 0.75**(1/num_episodes)
+
+discount = 0.9
+e_decay = 0.15**(1/1000)
+params = {}
+episode_num = 0
+epsilon = 0
+m_epsilon = 0
+rc_epsilon = 0
+learning_rate = 0
+m_wins = 0
+rc_wins = 0
+
+with open("parameters.json") as p_file:
+    params = json.load(p_file)
+    m_epsilon = params["m_epsilon"]
+    rc_epsilon = params["rc_epsilon"]
+    epsilon = params["epsilon"]
+    episode_num = params["episode#"]
+    learning_rate = params["learning_rate"]
+p_file.close()
+#num_episodes = 1000
+
 
 
 Q_m = {}
@@ -36,19 +51,22 @@ def main(i):
     global epsilon
     global m_epsilon
     global rc_epsilon
+    global m_wins
+    global rc_wins
 
     m_player = MazePlayer(7.5, 7.5)
     rc_player = Runner(1007.5, 457.5)
-    rc_enemy_1 = Chaser(812.5, 547.5)
+    rc_enemy_1 = Chaser(707.5, 547.5)
     #rc_enemy_2 = Chaser(1007.5, 532.5)
     #rc_enemy_3 = Chaser(1157.5, 397.5)
-    pit_1 = MazeLavaPit(405, 30, 15*5, 15*18)
-    pit_2 = MazeLavaPit(45, 405, 15*15, 15*5)
-    pit_3 = MazeLavaPit(390, 420, 15*5, 15*5)
-    m_goal = pygame.Rect(540, 540, 60, 60)
-    rc_goal = pygame.Rect(970, 0, 60, 60)
-    m_help = pygame.Rect(135, 0, 60, 45)
-    rc_help = pygame.Rect(1135, 0, 60, 45)
+    pit_1 = MazeLavaPit(405, 45, 15*5, 15*15)
+    pit_2 = MazeLavaPit(45, 435, 15*14, 15*5)
+    #pit_3 = MazeLavaPit(390, 420, 15*5, 15*5)
+    #m_goal = pygame.Rect(540, 540, 60, 60)
+    m_goal = pygame.Rect(390-15*8, 420-15*6, 60, 60)
+    rc_goal = pygame.Rect(1135, 285, 60, 60)
+    m_help = pygame.Rect(105+15*8, 15*8, 60, 45)
+    rc_help = pygame.Rect(1180, 465, 60, 45)
 
 
     m_reward = 0
@@ -82,13 +100,15 @@ def main(i):
     m_start = pygame.time.get_ticks()
     m_run = True
     rc_run = True
+    mh_activated = False
+    rch_activated = False
+    rc_enemy_counter = -5
+    m_help_counter = 0
+    rc_help_counter = 0
     while running:
         # pressed_key = pygame.key.get_pressed()
         # if pressed_key[K_SPACE]:
         #     break
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                running = False
         
         m_state = pack_state_maze()
         rc_state = pack_state_rc()
@@ -128,14 +148,16 @@ def main(i):
             m_player.update(m_action)
         pit_1.draw(DisplaySurface)
         pit_2.draw(DisplaySurface)
-        pit_3.draw(DisplaySurface)
+        #pit_3.draw(DisplaySurface)
         pygame.draw.rect(DisplaySurface, (0, 0, 230), m_goal)
         pygame.draw.rect(DisplaySurface, (33, 115, 55), m_help)
         m_player.draw(DisplaySurface)
 
         if rc_run:
             rc_player.update(rc_action)
-            rc_enemy_1.update(rc_player)
+            if rc_enemy_counter % 2 == 0 and rc_enemy_counter > 0:
+                rc_enemy_1.update(rc_player)
+            rc_enemy_counter += 1
         #rc_status2 = rc_enemy_2.update(rc_player, rc_enemy_1, rc_enemy_3)
         #rc_status3 = rc_enemy_3.update(rc_player, rc_enemy_1, rc_enemy_2)
         rc_enemy_1.draw(DisplaySurface)
@@ -146,44 +168,60 @@ def main(i):
         rc_player.draw(DisplaySurface)
         
         
-        m_reward = -0.1
-        rc_reward = -0.1
-
-        if (m_player.rect.colliderect(pit_1.rect) or m_player.rect.colliderect(pit_2.rect) or m_player.rect.colliderect(pit_3.rect)) and pit_1.active :
-            m_run = False
-            m_reward += -10
-            rc_reward += -0.5
-        if rc_player.rect.colliderect(rc_enemy_1):
-            rc_run = False
-            m_reward += -0.5
-            rc_reward += -10
-        if m_player.rect.colliderect(m_help) and rc_run:
-            if pygame.time.get_ticks() - m_start > 5000:
-                print("Maze Help Portal activated!")
-                rc_enemy_1.active = False
-                m_reward += m_epsilon * 2
-                m_epsilon *= 0.9999
-                m_start = pygame.time.get_ticks()
-        if rc_player.rect.colliderect(rc_help) and m_run:
-            if pygame.time.get_ticks() - rc_start > 5000:
-                print("Runner-Chaser Help Portal activated!")
-                pit_1.active = pit_2.active = pit_3.active = False
-                rc_reward += rc_epsilon * 2
-                rc_epsilon *= 0.9999
-                rc_start = pygame.time.get_ticks()
         
-        if m_player.rect.colliderect(m_goal):
-            m_run = False
-            m_reward += 10
-            rc_reward += 1
-        if rc_player.rect.colliderect(rc_goal):
-            r_run = False
-            rc_reward += 10
-            m_reward += 1
+        if m_run:
+            if (m_player.rect.colliderect(pit_1.rect) or m_player.rect.colliderect(pit_2.rect)) and pit_1.active :
+                m_run = False
+                m_reward += -15
+            if m_player.rect.colliderect(m_help):
+                if (pygame.time.get_ticks() - m_start > 5000 or m_help_counter == 0):
+                    #print("Maze Help Portal activated!")
+                    m_help_counter += 1
+                    if rc_run:
+                        mh_activated = True
+                        rc_enemy_1.active = False
+                        m_reward += m_epsilon * 2
+                        m_epsilon *= 0.99
+                    else:
+                        m_reward += 0.01
+                    m_start = pygame.time.get_ticks()
+        if rc_run:
+            if rc_player.rect.colliderect(rc_enemy_1):
+                rc_run = False
+                rc_reward += -15
+
+            if rc_player.rect.colliderect(rc_help):
+                if (pygame.time.get_ticks() - rc_start > 5000 or rc_help_counter == 0):
+                    # print("Runner-Chaser Help Portal activated!")
+                    rc_help_counter += 1
+                    if m_run:
+                        rch_activated = True
+                        pit_1.active = pit_2.active = False
+                        rc_reward += rc_epsilon * 2
+                        rc_epsilon *= 0.99
+                    else:
+                        rc_reward += 0.01
+                    rc_start = pygame.time.get_ticks()
+        
+        if m_run:
+            if m_player.rect.colliderect(m_goal):
+                m_run = False
+                m_wins += 1
+                m_reward += 30
+                if rch_activated:
+                    rc_reward += 1
+        
+        if rc_run:
+            if rc_player.rect.colliderect(rc_goal):
+                rc_run = False
+                rc_wins += 1
+                rc_reward += 30
+                if mh_activated:
+                    m_reward += 1
 
         
         if not pit_1.active and pygame.time.get_ticks() - rc_start > 5000:
-            pit_1.active = pit_2.active = pit_3.active = True
+            pit_1.active = pit_2.active = True
             rc_start = pygame.time.get_ticks()
         
         if not rc_enemy_1.active and pygame.time.get_ticks() - m_start > 5000:
@@ -202,26 +240,53 @@ def main(i):
         
         if m_run:
             Q_m[m_state][m_action] = (1-learning_rate) * Q_m[m_state][m_action] + learning_rate * (m_reward + discount * np.max(Q_m[m_state2]))
+            #print("Maze Reward: " + str(m_reward))
         if rc_run:
             Q_rc[rc_state][rc_action] = (1-learning_rate) * Q_rc[rc_state][rc_action] + learning_rate * (rc_reward + discount * np.max(Q_rc[rc_state2]))
+            #print("Tag Reward: " + str(rc_reward))
+        
+        
+        
         
         running = m_run or rc_run
-        #pygame.time.wait(50)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+                pygame.quit()
+                sys.exit()
+        #pygame.time.wait(300)
 
 
 if __name__ == "__main__":
     #main()
-    for i in range(1, num_episodes + 1):
-        print(i)
-        main(i)
+    while True:
+        print("Episode #: " + str(episode_num))
+        main(episode_num)
         epsilon *= e_decay
-        print(epsilon)
-        with open("Maze_Q_Table.json", "w") as file:
-          json.dump(Q_m, file)
-        file.close()
-        with open("Tag_Q_Table.json", "w") as file:
-          json.dump(Q_rc, file)
-        file.close()
+        learning_rate *= 0.991
+        print("Epsilon: " + str(epsilon))
+        print("Maze Help Epsilon: " + str(m_epsilon))
+        print("Tag Help Epsilon: " + str(rc_epsilon))
+        print("Learning Rate: " + str(learning_rate))
+        print("Maze Wins: " + str(m_wins))
+        print("Tag Wins: " + str(rc_wins))
+        print("\n\n\n")
+        if episode_num % 50 == 0:
+            with open("Maze_Q_Table.json", "w") as m_file:
+              json.dump(Q_m, m_file)
+            m_file.close()
+            with open("Tag_Q_Table.json", "w") as t_file:
+              json.dump(Q_rc, t_file)
+            t_file.close()
+            with open("parameters.json", "w") as p_file:
+                params["episode#"] = episode_num
+                params["epsilon"] = epsilon
+                params["m_epsilon"] = m_epsilon
+                params["rc_epsilon"] = rc_epsilon
+                params["learning_rate"] = learning_rate
+                json.dump(params, p_file)
+            p_file.close()
+        episode_num += 1
     # # for keys,values in Q.items():
     # #     print(keys)
     # #     print(values)
