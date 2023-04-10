@@ -10,16 +10,16 @@ class Chaser(pygame.sprite.Sprite):
         self.rect.center = (center_x, center_y)
         self.active = True
 
-    def update_c(self, runner, chaser1, chaser2):
+    def update_c(self, runner, chaser1):
         if self.active:
             dx = runner.rect.centerx - self.rect.centerx
             dy = runner.rect.centery - self.rect.centery
 
             if dx != 0:
-                if not chaser1.rect.centerx == self.rect.centerx + (15 * dx / abs(dx)) or not chaser2.rect.centerx == self.rect.centerx + (15 * dx / abs(dx)):
+                if not chaser1.rect.centerx == self.rect.centerx + (15 * dx / abs(dx)):
                     self.rect.centerx += 15 * (dx / abs(dx))
             if dy != 0:
-                if not chaser1.rect.centery == self.rect.centery + (15 * dy / abs(dy)) or not chaser2.rect.centery == self.rect.centery + (15 * dy / abs(dy)):
+                if not chaser1.rect.centery == self.rect.centery + (15 * dy / abs(dy)):
                     self.rect.centery += 15 * (dy / abs(dy))
             if dx == 0 and dy == 0:
                 return -1

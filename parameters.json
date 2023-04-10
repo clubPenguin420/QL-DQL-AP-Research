@@ -1,1 +1,1 @@
-{"episode#": 2300, "epsilon": 0.010188256794965985, "m_epsilon": 0.5416850759668536, "rc_epsilon": 0.9414801494009999, "learning_rate": 7.455818085512755e-10}
+{"episode#": 25000, "epsilon": 0.10441715963675793, "m_epsilon": 1, "rc_epsilon": 2.0717490408579393e-33, "learning_rate": 0.1512522100403215, "m_wins": 0, "rc_wins": 1}
